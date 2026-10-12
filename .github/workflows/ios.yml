@@ -1,0 +1,33 @@
+name: Build iOS widget
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'native/ios/**'
+      - '.github/workflows/ios.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate Xcode project
+        working-directory: native/ios
+        run: xcodegen generate
+      - name: Compile app and WidgetKit extension
+        working-directory: native/ios
+        run: |
+          xcodebuild \
+            -project ParkPulse.xcodeproj \
+            -scheme ParkPulse \
+            -sdk iphonesimulator \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            build
