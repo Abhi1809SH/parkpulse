@@ -1,0 +1,45 @@
+name: ParkPulse
+options:
+  bundleIdPrefix: com.parkpulse
+settings:
+  base:
+    IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+    SWIFT_VERSION: "5.0"
+
+targets:
+  ParkPulse:
+    type: application
+    platform: iOS
+    sources:
+      - ParkPulseApp
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.parkpulse.app
+    info:
+      path: ParkPulseApp/Info.plist
+      properties:
+        CFBundleDisplayName: ParkPulse
+        CFBundleURLTypes:
+          - CFBundleURLName: com.parkpulse.app
+            CFBundleURLSchemes:
+              - parkpulse
+        UILaunchScreen: {}
+    dependencies:
+      - target: ParkPulseWidget
+        embed: true
+
+  ParkPulseWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - ParkPulseWidget
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.parkpulse.app.widget
+        APPLICATION_EXTENSION_API_ONLY: YES
+    info:
+      path: ParkPulseWidget/Info.plist
+      properties:
+        CFBundleDisplayName: ParkPulse Widget
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
