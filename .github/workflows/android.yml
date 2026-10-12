@@ -20,16 +20,23 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Install Android SDK components
-        run: |
-          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0" >/dev/null
       - name: Build signed debug APK without external dependencies
         working-directory: native/android
         shell: bash
         run: |
           set -euo pipefail
-          BT="$ANDROID_HOME/build-tools/35.0.0"
-          ANDROID_JAR="$ANDROID_HOME/platforms/android-35/android.jar"
+          BT_DIR="$ANDROID_HOME/build-tools"
+          PLATFORM_DIR="$ANDROID_HOME/platforms"
+          BT_VERSION="$(ls -1 "$BT_DIR" | sort -V | tail -1)"
+          PLATFORM="$(find "$PLATFORM_DIR" -maxdepth 1 -type d -name 'android-*' | sort -V | tail -1)"
+          BT="$BT_DIR/$BT_VERSION"
+          ANDROID_JAR="$PLATFORM/android.jar"
+
+          echo "Using build-tools $BT_VERSION"
+          echo "Using platform $PLATFORM"
+          test -x "$BT/aapt2"
+          test -f "$ANDROID_JAR"
+
           rm -rf build
           mkdir -p build/generated build/classes build/dex
 
