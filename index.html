@@ -21,37 +21,18 @@
   <div class="authCard">
     <div class="eyebrow">PARKPULSE</div>
     <h1 id="authTitle">Parking without the hassle.</h1>
-    <p id="authCopy">Enter your mobile number. We’ll text you a one-time code — no password needed.</p>
+    <p id="authCopy">Enter your email. We’ll send you a one-time code — no password needed.</p>
 
-    <div id="authSwitch" class="authSwitch">
-      <button id="phoneMode" class="on">Mobile OTP</button>
-      <button id="emailMode">Existing email</button>
+    <div id="emailStep">
+      <div class="field"><label>EMAIL</label><input id="email" type="email" inputmode="email" autocomplete="email" placeholder="your@email.com" /></div>
+      <button class="authPrimary" id="sendOtpBtn">Send code</button>
+      <p class="muted">We’ll email you a one-time code to sign in.</p>
     </div>
 
-    <div id="phoneAuth">
-      <div id="phoneStep">
-        <div class="field"><label>MOBILE NUMBER</label><input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+91 98765 43210" /></div>
-        <button class="authPrimary" id="sendOtpBtn">Send OTP</button>
-        <p class="muted">Include the country code, for example +91 or +61.</p>
-      </div>
-      <div id="otpStep" class="hidden">
-        <div class="field"><label>6-DIGIT OTP</label><input id="otp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456" /></div>
-        <button class="authPrimary" id="verifyOtpBtn">Verify & continue</button>
-        <div class="otpRow"><button id="resendOtpBtn">Resend code</button><button id="changeNumberBtn">Change number</button></div>
-      </div>
-    </div>
-
-    <div id="emailAuth" class="hidden">
-      <div class="field"><label>EMAIL</label><input id="email" type="email" autocomplete="email" placeholder="your@email.com" /></div>
-      <div class="field"><label>PASSWORD</label><input id="password" type="password" autocomplete="current-password" placeholder="Your password" /></div>
-      <button class="authPrimary" id="emailSignInBtn">Sign in</button>
-      <button class="authSecondary" id="forgotBtn">Forgot password?</button>
-      <p class="muted">Temporary fallback for accounts created before mobile OTP.</p>
-    </div>
-
-    <div id="recoveryAuth" class="hidden">
-      <div class="field"><label>NEW PASSWORD</label><input id="newPassword" type="password" autocomplete="new-password" placeholder="At least 8 characters" /></div>
-      <button class="authPrimary" id="resetPasswordBtn">Save new password</button>
+    <div id="otpStep" class="hidden">
+      <div class="field"><label>6-DIGIT CODE</label><input id="otp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456" /></div>
+      <button class="authPrimary" id="verifyOtpBtn">Verify & continue</button>
+      <div class="otpRow"><button id="resendOtpBtn">Resend code</button><button id="changeEmailBtn">Change email</button></div>
     </div>
 
     <div id="authStatus" class="statusCard hidden"></div>
@@ -91,7 +72,7 @@
 </div>
 
 <div id="nameModal" class="modalBack hidden" role="dialog" aria-modal="true">
-  <div class="modal"><div class="eyebrow">ONE LAST THING</div><h2>What should we call you?</h2><p>This is only shown the first time you join with your mobile number.</p><div class="field"><label>YOUR NAME</label><input id="setupName" type="text" autocomplete="name" placeholder="e.g. Abhishek" /></div><button class="authPrimary" id="saveNameBtn">Continue to ParkPulse</button></div>
+  <div class="modal"><div class="eyebrow">ONE LAST THING</div><h2>What should we call you?</h2><p>This is only shown the first time you join ParkPulse.</p><div class="field"><label>YOUR NAME</label><input id="setupName" type="text" autocomplete="name" placeholder="e.g. Abhishek" /></div><button class="authPrimary" id="saveNameBtn">Continue to ParkPulse</button></div>
 </div>
 
 <div id="toast" class="toast hidden"></div>
