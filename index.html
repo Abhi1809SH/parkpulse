@@ -16,66 +16,22 @@
 <div id="syncOverlay" class="syncOverlay"><div><div class="spinner"></div><strong>Connecting ParkPulse…</strong><p class="muted">Checking live parking before showing any spaces.</p></div></div>
 <div class="app">
 <header class="top"><div class="brand"><div class="mark">P</div><div><strong>ParkPulse</strong><span>WORKPLACE PARKING</span></div></div><button class="icon" id="refreshBtn" aria-label="Refresh">↻</button></header>
-
-<section id="authView" class="auth hidden">
-  <div class="authCard">
-    <div class="eyebrow">PARKPULSE</div>
-    <h1 id="authTitle">Parking without the hassle.</h1>
-    <p id="authCopy">Enter your email. We’ll send you a one-time code — no password needed.</p>
-
-    <div id="emailStep">
-      <div class="field"><label>EMAIL</label><input id="email" type="email" inputmode="email" autocomplete="email" placeholder="your@email.com" /></div>
-      <button class="authPrimary" id="sendOtpBtn">Send code</button>
-      <p class="muted">We’ll email you a one-time code to sign in.</p>
-    </div>
-
-    <div id="otpStep" class="hidden">
-      <div class="field"><label>6-DIGIT CODE</label><input id="otp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456" /></div>
-      <button class="authPrimary" id="verifyOtpBtn">Verify & continue</button>
-      <div class="otpRow"><button id="resendOtpBtn">Resend code</button><button id="changeEmailBtn">Change email</button></div>
-    </div>
-
-    <div id="authStatus" class="statusCard hidden"></div>
-  </div>
-</section>
-
+<section id="authView" class="auth hidden"><div class="authCard">
+<div class="eyebrow">PARKPULSE</div><h1 id="authTitle">Welcome back.</h1><p id="authCopy">Sign in with your mobile number and password.</p>
+<div class="authSwitch"><button id="loginTab" class="on">SIGN IN</button><button id="signupTab">CREATE ACCOUNT</button></div>
+<div id="loginStep"><div class="field"><label>MOBILE NUMBER</label><input id="loginPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="98765 43210" /></div><div class="field"><label>PASSWORD</label><input id="loginPassword" type="password" autocomplete="current-password" placeholder="Your password" /></div><button class="authPrimary" id="loginBtn">Sign in</button><button class="authSecondary" id="forgotBtn">Forgot password?</button></div>
+<div id="signupStep" class="hidden"><div class="field"><label>YOUR NAME</label><input id="signupName" type="text" autocomplete="name" placeholder="e.g. Abhishek" /></div><div class="field"><label>MOBILE NUMBER</label><input id="signupPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="98765 43210" /></div><div class="field"><label>PASSWORD</label><input id="signupPassword" type="password" autocomplete="new-password" placeholder="At least 8 characters" /></div><div class="field"><label>CONFIRM PASSWORD</label><input id="signupPassword2" type="password" autocomplete="new-password" placeholder="Repeat password" /></div><button class="authPrimary" id="signupBtn">Create account</button><p class="muted">No invite code, email verification or SMS required. A recovery code will be shown once after signup.</p></div>
+<div id="recoverStep" class="hidden"><div class="field"><label>MOBILE NUMBER</label><input id="recoverPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="98765 43210" /></div><div class="field"><label>RECOVERY CODE</label><input id="recoveryCode" type="text" autocapitalize="characters" autocomplete="off" placeholder="ABCD-EFGH-JKLM" /></div><div class="field"><label>NEW PASSWORD</label><input id="newPassword" type="password" autocomplete="new-password" placeholder="At least 8 characters" /></div><button class="authPrimary" id="recoverBtn">Reset password</button><button class="authSecondary" id="backToLoginBtn">Back to sign in</button></div>
+<div id="adminStep" class="hidden"><div class="field"><label>ADMIN EMAIL</label><input id="adminEmail" type="email" autocomplete="email" placeholder="admin@example.com" /></div><div class="field"><label>PASSWORD</label><input id="adminPassword" type="password" autocomplete="current-password" placeholder="Admin password" /></div><button class="authPrimary" id="adminLoginBtn">Admin sign in</button><button class="authSecondary" id="backFromAdminBtn">Back</button></div>
+<button class="authSecondary" id="adminModeBtn">Existing admin? Sign in with email</button><div id="authStatus" class="statusCard hidden"></div>
+</div></section>
 <div id="mainApp" class="hidden">
-<section class="view active" id="home">
-  <div class="head"><div class="eyebrow">LIVE PARKING</div><h1 id="hello">Hey 👋</h1><p id="homeHint">Tap a free spot below. That's it.</p></div>
-  <div id="offlineBanner" class="offlineBanner hidden">Live data is unavailable. Parking is disabled until we reconnect.</div>
-  <div class="summary">
-    <div class="livebar"><span class="status"><i id="liveDot" class="dot warn"></i><span id="liveLabel">SYNCING</span></span><span id="pulse">Checking…</span></div>
-    <div class="summaryTop"><div><small>AVAILABLE RIGHT NOW</small><h2><span id="freeTotal">—</span> of 15</h2></div><div class="availability"><div class="avail">🚗 <b id="carFree">—</b><span id="carMeta">cars free</span></div><div class="avail">🏍️ <b id="bikeFree">—</b><span id="bikeMeta">bikes free</span></div></div></div>
-  </div>
-  <div id="parkedCard" class="parked hidden"></div>
-  <div id="quickPark" class="card quick">
-    <div class="quickHead"><h2>Tap your spot</h2><span>1 tap to park</span></div>
-    <div class="zoneRow"><div class="zoneTitle"><strong>🚗 Car parking</strong><span id="homeCarCount">—</span></div><div id="homeCars" class="spotGrid"></div></div>
-    <div class="zoneRow"><div class="zoneTitle"><strong>🏍️ Bike parking</strong><span id="homeBikeCount">—</span></div><div id="homeBikes" class="spotGrid"></div></div>
-    <div class="legend">Green = available · Grey = occupied</div>
-  </div>
-</section>
-
-<section class="view" id="map">
-  <div class="head"><div class="eyebrow">FULL VIEW</div><h1 id="mapTitle">Car parking.</h1><p>Tap any green space to park.</p></div>
-  <div class="typeTabs"><button id="carTab" class="on">🚗 Car<span id="carTabCount">—</span></button><button id="bikeTab">🏍️ Bike<span id="bikeTabCount">—</span></button></div>
-  <div class="map"><div class="livebar"><strong id="mapZoneLabel">Car park</strong><span id="mapFree">Syncing…</span></div><div id="parkingGrid" class="mapGrid"></div></div>
-</section>
-
-<section class="view" id="profile">
-  <div class="head"><div class="eyebrow">ACCOUNT</div><h1>Profile.</h1><p>Your ParkPulse account stays signed in on this device.</p></div>
-  <div class="card profileCard"><div class="avatar" id="avatar">P</div><h2 id="profileName">ParkPulse user</h2><p id="profileContact"></p><span id="profileRole" class="rolePill">employee</span><button id="signOutBtn">Sign out</button></div>
-</section>
-
+<section class="view active" id="home"><div class="head"><div class="eyebrow">LIVE PARKING</div><h1 id="hello">Hey 👋</h1><p id="homeHint">Tap a free spot below. That's it.</p></div><div id="offlineBanner" class="offlineBanner hidden">Live data is unavailable. Parking is disabled until we reconnect.</div><div class="summary"><div class="livebar"><span class="status"><i id="liveDot" class="dot warn"></i><span id="liveLabel">SYNCING</span></span><span id="pulse">Checking…</span></div><div class="summaryTop"><div><small>AVAILABLE RIGHT NOW</small><h2><span id="freeTotal">—</span> of 15</h2></div><div class="availability"><div class="avail">🚗 <b id="carFree">—</b><span id="carMeta">cars free</span></div><div class="avail">🏍️ <b id="bikeFree">—</b><span id="bikeMeta">bikes free</span></div></div></div></div><div id="parkedCard" class="parked hidden"></div><div id="quickPark" class="card quick"><div class="quickHead"><h2>Tap your spot</h2><span>1 tap to park</span></div><div class="zoneRow"><div class="zoneTitle"><strong>🚗 Car parking</strong><span id="homeCarCount">—</span></div><div id="homeCars" class="spotGrid"></div></div><div class="zoneRow"><div class="zoneTitle"><strong>🏍️ Bike parking</strong><span id="homeBikeCount">—</span></div><div id="homeBikes" class="spotGrid"></div></div><div class="legend">Green = available · Grey = occupied</div></div></section>
+<section class="view" id="map"><div class="head"><div class="eyebrow">FULL VIEW</div><h1 id="mapTitle">Car parking.</h1><p>Tap any green space to park.</p></div><div class="typeTabs"><button id="carTab" class="on">🚗 Car<span id="carTabCount">—</span></button><button id="bikeTab">🏍️ Bike<span id="bikeTabCount">—</span></button></div><div class="map"><div class="livebar"><strong id="mapZoneLabel">Car park</strong><span id="mapFree">Syncing…</span></div><div id="parkingGrid" class="mapGrid"></div></div></section>
+<section class="view" id="profile"><div class="head"><div class="eyebrow">ACCOUNT</div><h1>Profile.</h1><p>Your ParkPulse account stays signed in on this device.</p></div><div class="card profileCard"><div class="avatar" id="avatar">P</div><h2 id="profileName">ParkPulse user</h2><p id="profileContact"></p><span id="profileRole" class="rolePill">employee</span><button id="signOutBtn">Sign out</button></div></section>
 <nav class="nav"><button class="on" data-go="home"><b>⌂</b>Home</button><button data-go="map"><b>▦</b>All spaces</button><button data-go="profile"><b>☺</b>Profile</button></nav>
-</div>
-</div>
-
-<div id="nameModal" class="modalBack hidden" role="dialog" aria-modal="true">
-  <div class="modal"><div class="eyebrow">ONE LAST THING</div><h2>What should we call you?</h2><p>This is only shown the first time you join ParkPulse.</p><div class="field"><label>YOUR NAME</label><input id="setupName" type="text" autocomplete="name" placeholder="e.g. Abhishek" /></div><button class="authPrimary" id="saveNameBtn">Continue to ParkPulse</button></div>
-</div>
-
-<div id="toast" class="toast hidden"></div>
-<script type="module" src="app.js"></script>
-</body>
-</html>
+</div></div>
+<div id="nameModal" class="modalBack hidden" role="dialog" aria-modal="true"><div class="modal"><div class="eyebrow">ONE LAST THING</div><h2>What should we call you?</h2><p>This is only shown if your account doesn't already have a name.</p><div class="field"><label>YOUR NAME</label><input id="setupName" type="text" autocomplete="name" placeholder="e.g. Abhishek" /></div><button class="authPrimary" id="saveNameBtn">Continue to ParkPulse</button></div></div>
+<div id="recoveryModal" class="modalBack hidden" role="dialog" aria-modal="true"><div class="modal"><div class="eyebrow">SAVE THIS CODE</div><h2>Your recovery code</h2><p>Keep this somewhere safe. You'll need it if you ever forget your password.</p><div class="field"><label>RECOVERY CODE</label><input id="shownRecoveryCode" type="text" readonly /></div><button class="authPrimary" id="copyRecoveryBtn">Copy recovery code</button><button class="authSecondary" id="savedRecoveryBtn">I've saved it — continue</button></div></div>
+<div id="toast" class="toast hidden"></div><script type="module" src="app.js"></script>
+</body></html>
