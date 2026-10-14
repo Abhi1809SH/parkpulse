@@ -29,5 +29,8 @@ jobs:
       - name: Check service worker syntax
         run: node --check sw.js
 
+      - name: Validate PWA manifest JSON
+        run: node -e "JSON.parse(require('fs').readFileSync('manifest.webmanifest','utf8')); console.log('Manifest JSON valid')"
+
       - name: Run ParkPulse static checks
         run: node scripts/validate-static.mjs
