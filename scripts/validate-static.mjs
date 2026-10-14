@@ -18,9 +18,12 @@ check(!/<section class="view active" id="profile">/.test(html),'Profile is not t
 check(app.includes("if(event==='SIGNED_IN'||event==='INITIAL_SESSION')setView('home')"),'Authentication explicitly lands on Home');
 check(app.includes("from('parking_presence')"),'Frontend uses privacy-safe parking presence');
 check(app.includes("from('parking_sessions')") && app.includes(".is('ended_at',null).maybeSingle()"),'Frontend only requests the signed-in user active session');
-check(html.includes('app.js?v=11'),'HTML points at current JavaScript release');
+check(app.includes('const HEARTBEAT_MS=15000'),'15-second server heartbeat is enabled');
+check(app.includes('refreshLive({silent:true})'),'Heartbeat revalidates live parking from the server');
+check(app.includes("document.visibilityState==='visible'"),'Heartbeat only runs while ParkPulse is visible');
+check(html.includes('app.js?v=12'),'HTML points at current JavaScript release');
 check(html.includes('app.css?v=11'),'HTML points at current CSS release');
-check(sw.includes("const CACHE='parkpulse-v11'"),'Service worker cache version matches release');
+check(sw.includes("const CACHE='parkpulse-v12'"),'Service worker cache version matches release');
 check(sw.includes("fetch(request,{cache:'no-store'})"),'Core asset refresh is network-first');
 check(!html.includes('invite code') || html.includes('No invite code'),'Invite-code onboarding is not required');
 check(!html.includes('sendOtpBtn') && !html.includes('verifyOtpBtn'),'Old OTP controls are absent');
