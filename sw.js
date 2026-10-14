@@ -1,4 +1,4 @@
-const CACHE='parkpulse-v11';
+const CACHE='parkpulse-v12';
 const SHELL=['./','./index.html','./app.css','./app.js','./manifest.webmanifest','./icon.svg'];
 
 self.addEventListener('install',event=>{
