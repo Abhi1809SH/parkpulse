@@ -4,8 +4,9 @@ const SUPABASE_URL='https://qogvbexjjipuduhppaup.supabase.co';
 const SUPABASE_KEY='sb_publishable_muMrKfVXCTNTT9pia2r7wg_4pyesv4g';
 const supabase=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 const $=id=>document.getElementById(id);
-const state={user:null,profile:null,spaces:[],sessions:[],synced:false,online:navigator.onLine,loadSeq:0,channel:null,parkingType:'car',claiming:null};
-let refreshTimer=null;
+const state={user:null,profile:null,spaces:[],sessions:[],synced:false,online:navigator.onLine,loadSeq:0,channel:null,parkingType:'car',claiming:null,loading:false};
+let refreshTimer=null,heartbeatTimer=null;
+const HEARTBEAT_MS=15000;
 
 function toast(msg){$('toast').textContent=msg;$('toast').classList.remove('hidden');clearTimeout(window.__toastT);window.__toastT=setTimeout(()=>$('toast').classList.add('hidden'),2400)}
 function setAuthStatus(msg,bad=false){const el=$('authStatus');el.textContent=msg;el.classList.remove('hidden','bad');if(bad)el.classList.add('bad')}
@@ -50,9 +51,11 @@ function showNameSetup(){$('nameModal').classList.remove('hidden');setTimeout(()
 async function saveName(){const name=$('setupName').value.trim();if(name.length<2)return toast('Enter your name.');$('saveNameBtn').disabled=true;const {error}=await supabase.rpc('set_my_display_name',{p_display_name:name});$('saveNameBtn').disabled=false;if(error)return toast('Could not save your name.');$('nameModal').classList.add('hidden');await loadProfile();toast('Welcome to ParkPulse ✓')}
 $('saveNameBtn').onclick=saveName;$('setupName').addEventListener('keydown',e=>{if(e.key==='Enter')saveName()});
 
-async function refreshLive(){
+async function refreshLive({silent=false}={}){
   if(!state.user)return;
-  const seq=++state.loadSeq;setSyncState('syncing');$('mainApp').classList.add('refreshing');
+  if(silent&&state.loading)return;
+  const seq=++state.loadSeq;
+  if(!silent){state.loading=true;setSyncState('syncing');$('mainApp').classList.add('refreshing')}
   try{
     if(!navigator.onLine)throw new Error('OFFLINE');
     const [spacesRes,presenceRes,mySessionRes]=await Promise.all([
@@ -67,10 +70,12 @@ async function refreshLive(){
     state.sessions=(presenceRes.data||[]).filter(p=>p.occupied).map(p=>p.space_id===mine?.space_id?mine:{id:null,space_id:p.space_id,user_id:null,started_at:null,ended_at:null});
     state.online=true;renderAll();setSyncState('live');
   }catch(err){if(seq!==state.loadSeq)return;console.error(err);state.online=navigator.onLine;setSyncState('error')}
-  finally{if(seq===state.loadSeq)$('mainApp').classList.remove('refreshing')}
+  finally{if(!silent&&seq===state.loadSeq){state.loading=false;$('mainApp').classList.remove('refreshing')}}
 }
 function scheduleRefresh(){clearTimeout(refreshTimer);refreshTimer=setTimeout(()=>refreshLive(),120)}
 function subscribeRealtime(){if(state.channel)supabase.removeChannel(state.channel);state.channel=supabase.channel('parkpulse-live').on('postgres_changes',{event:'*',schema:'public',table:'parking_presence'},scheduleRefresh).on('postgres_changes',{event:'*',schema:'public',table:'parking_spaces'},scheduleRefresh).subscribe(status=>{if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')setSyncState('error')})}
+function startHeartbeat(){stopHeartbeat();heartbeatTimer=setInterval(()=>{if(state.user&&state.online&&document.visibilityState==='visible'&&!state.claiming)refreshLive({silent:true})},HEARTBEAT_MS)}
+function stopHeartbeat(){if(heartbeatTimer){clearInterval(heartbeatTimer);heartbeatTimer=null}}
 function renderAll(){const enabled=state.spaces.filter(s=>s.is_enabled),free=enabled.filter(s=>!activeForSpace(s.id)),cars=spacesOfType('car'),bikes=spacesOfType('bike'),freeCars=freeOfType('car'),freeBikes=freeOfType('bike');$('freeTotal').textContent=free.length;$('carFree').textContent=freeCars.length;$('bikeFree').textContent=freeBikes.length;$('carMeta').textContent=`of ${cars.length} free`;$('bikeMeta').textContent=`of ${bikes.length} free`;$('homeCarCount').textContent=`${freeCars.length} of ${cars.length} free`;$('homeBikeCount').textContent=`${freeBikes.length} of ${bikes.length} free`;$('carTabCount').textContent=`${freeCars.length} free`;$('bikeTabCount').textContent=`${freeBikes.length} free`;$('pulse').textContent=free.length>=8?'Plenty free':free.length>=4?'Filling up':'Nearly full';renderHome();renderMap()}
 function spotButton(sp){const sess=activeForSpace(sp.id),mine=sess?.user_id===state.user.id,free=!sess,claiming=state.claiming===sp.code,cls=mine?'mine':free?'free':'';return `<button class="spot ${cls} ${claiming?'busy':''}" data-code="${sp.code}" ${!free||!state.synced||!state.online||!!currentSession()?'disabled':''}>${claiming?'…':sp.code}<small>${mine?'YOU':free?'FREE':'TAKEN'}</small></button>`}
 function renderHome(){const s=currentSession();if(s){const sp=state.spaces.find(x=>x.id===s.space_id);$('parkedCard').classList.remove('hidden');$('quickPark').classList.add('hidden');$('homeHint').textContent='You’re parked. Checkout is one tap.';$('parkedCard').innerHTML=`<div class="parkedTop"><span>YOU'RE PARKED</span><span>LIVE</span></div><div class="parkedBody"><div><h2>${sp?.code||'—'}</h2><p>${sp?.vehicle_type==='bike'?'Bike':'Car'} · parked ${minsSince(s.started_at)} min ago</p></div><button class="checkout" id="homeCheckout">Check out</button></div>`;$('homeCheckout').onclick=releaseSpace;return}$('parkedCard').classList.add('hidden');$('quickPark').classList.remove('hidden');$('homeHint').textContent='Tap a free spot below. That’s it.';$('homeCars').innerHTML=spacesOfType('car').map(spotButton).join('');$('homeBikes').innerHTML=spacesOfType('bike').map(spotButton).join('');document.querySelectorAll('#homeCars .spot.free,#homeBikes .spot.free').forEach(b=>b.onclick=()=>claimCode(b.dataset.code))}
@@ -82,7 +87,7 @@ async function releaseSpace(){if(!state.online)return toast('Reconnect before ch
 $('signOutBtn').onclick=()=>supabase.auth.signOut();$('refreshBtn').onclick=()=>refreshLive();
 function handleDeepLink(){const q=new URLSearchParams(location.search),p=q.get('park')||q.get('parking');if(p==='car'||p==='bike'){state.parkingType=p;setView('map');return true}return false}
 function resetAuthUI(){showAuth('login');['loginPassword','signupPassword','signupPassword2','recoveryCode','newPassword','adminPassword'].forEach(id=>{if($(id))$(id).value=''})}
-async function onSession(session,event){state.user=session?.user||null;if(!state.user){$('syncOverlay').classList.add('hidden');$('authView').classList.remove('hidden');$('mainApp').classList.add('hidden');$('nameModal').classList.add('hidden');$('recoveryModal').classList.add('hidden');resetAuthUI();if(state.channel){supabase.removeChannel(state.channel);state.channel=null}return}$('authView').classList.add('hidden');$('mainApp').classList.remove('hidden');$('syncOverlay').classList.remove('hidden');if(event==='SIGNED_IN'||event==='INITIAL_SESSION')setView('home');await loadProfile();subscribeRealtime();await refreshLive();$('syncOverlay').classList.add('hidden');handleDeepLink()}
+async function onSession(session,event){state.user=session?.user||null;if(!state.user){stopHeartbeat();$('syncOverlay').classList.add('hidden');$('authView').classList.remove('hidden');$('mainApp').classList.add('hidden');$('nameModal').classList.add('hidden');$('recoveryModal').classList.add('hidden');resetAuthUI();if(state.channel){supabase.removeChannel(state.channel);state.channel=null}return}$('authView').classList.add('hidden');$('mainApp').classList.remove('hidden');$('syncOverlay').classList.remove('hidden');if(event==='SIGNED_IN'||event==='INITIAL_SESSION')setView('home');await loadProfile();subscribeRealtime();await refreshLive();startHeartbeat();$('syncOverlay').classList.add('hidden');handleDeepLink()}
 supabase.auth.onAuthStateChange((event,session)=>{if(event==='INITIAL_SESSION'||event==='SIGNED_IN'||event==='SIGNED_OUT'||event==='TOKEN_REFRESHED')onSession(session,event)});
 window.addEventListener('online',()=>{state.online=true;if(state.user)refreshLive()});window.addEventListener('offline',()=>{state.online=false;setSyncState('error')});document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&state.user)refreshLive()});window.addEventListener('pageshow',()=>{if(state.user)refreshLive()});
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(console.error);
