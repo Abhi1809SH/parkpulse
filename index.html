@@ -33,5 +33,20 @@
 </div></div>
 <div id="nameModal" class="modalBack hidden" role="dialog" aria-modal="true"><div class="modal"><div class="eyebrow">ONE LAST THING</div><h2>What should we call you?</h2><p>This is only shown if your account doesn't already have a name.</p><div class="field"><label>YOUR NAME</label><input id="setupName" type="text" autocomplete="name" placeholder="e.g. Abhishek" /></div><button class="authPrimary" id="saveNameBtn">Continue to ParkPulse</button></div></div>
 <div id="recoveryModal" class="modalBack hidden" role="dialog" aria-modal="true"><div class="modal"><div class="eyebrow">SAVE THIS CODE</div><h2>Your recovery code</h2><p>Keep this somewhere safe. You'll need it if you ever forget your password.</p><div class="field"><label>RECOVERY CODE</label><input id="shownRecoveryCode" type="text" readonly /></div><button class="authPrimary" id="copyRecoveryBtn">Copy recovery code</button><button class="authSecondary" id="savedRecoveryBtn">I've saved it — continue</button></div></div>
-<div id="toast" class="toast hidden"></div><script type="module" src="app.js"></script>
+<div id="toast" class="toast hidden"></div>
+<script>
+(() => {
+  const params = new URLSearchParams(location.search);
+  const deepLink = ['car','bike'].includes(params.get('park') || params.get('parking'));
+  const main = document.getElementById('mainApp');
+  const forceHome = () => {
+    if (!main || main.classList.contains('hidden') || deepLink) return;
+    document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'home'));
+    document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('on', b.dataset.go === 'home'));
+  };
+  new MutationObserver(forceHome).observe(main, {attributes:true, attributeFilter:['class']});
+  window.addEventListener('pageshow', forceHome);
+})();
+</script>
+<script type="module" src="app.js?v=10"></script>
 </body></html>
