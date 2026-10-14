@@ -8,9 +8,10 @@ const failures=[];
 const check=(ok,msg)=>{if(!ok)failures.push(msg);else console.log(`✓ ${msg}`)};
 
 const ids=new Set([...html.matchAll(/\bid=["']([^"']+)["']/g)].map(m=>m[1]));
+const dynamicIds=new Set([...app.matchAll(/id=[\\"']([^\\"']+)[\\"']/g)].map(m=>m[1]));
 const referenced=[...new Set([...app.matchAll(/\$\(['"]([^'"]+)['"]\)/g)].map(m=>m[1]))];
-const missing=referenced.filter(id=>!ids.has(id));
-check(missing.length===0,missing.length?`All JS DOM ids exist (missing: ${missing.join(', ')})`:'All JS DOM ids exist');
+const missing=referenced.filter(id=>!ids.has(id)&&!dynamicIds.has(id));
+check(missing.length===0,missing.length?`All JS DOM ids exist (missing: ${missing.join(', ')})`:'All JS DOM ids exist, including dynamic controls');
 
 check(/<section class="view active" id="home">/.test(html),'Home is the default active view');
 check(!/<section class="view active" id="profile">/.test(html),'Profile is not the default active view');
