@@ -29,6 +29,9 @@ jobs:
       - name: Check location control syntax
         run: node --check location-control.js
 
+      - name: Check update control syntax
+        run: node --check update-control.js
+
       - name: Check service worker syntax
         run: node --check sw.js
 
@@ -37,6 +40,9 @@ jobs:
 
       - name: Test location permission toggle
         run: node scripts/test-location-control.mjs
+
+      - name: Test automatic update flow
+        run: node scripts/test-update-control.mjs
 
       - name: Run ParkPulse static checks
         run: node scripts/validate-static.mjs
