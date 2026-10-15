@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { enableLocationWithProof, disableLocation, LOCATION_TOGGLE_KEY } from '../location-control.js';
+import { enableLocationWithProof, disableLocation, locationPreferenceEnabled, LOCATION_TOGGLE_KEY } from '../location-control.js';
 
 function storage(initial={}){
   const data=new Map(Object.entries(initial));
@@ -16,6 +16,22 @@ function geoSuccess(coords={latitude:12.97,longitude:80.25,accuracy:12}){
 
 function geoFailure(error){
   return {getCurrentPosition(_success,failure){failure(error)}};
+}
+
+{
+  const s=storage();
+  assert.equal(locationPreferenceEnabled(s),true,'Location should be enabled by default');
+  assert.equal(s.getItem(LOCATION_TOGGLE_KEY),'true','Default-on state should persist across app restarts');
+}
+
+{
+  const s=storage({[LOCATION_TOGGLE_KEY]:'true'});
+  assert.equal(locationPreferenceEnabled(s),true,'Enabled preference must survive app restart');
+}
+
+{
+  const s=storage({[LOCATION_TOGGLE_KEY]:'false'});
+  assert.equal(locationPreferenceEnabled(s),false,'An explicit user disable must be respected');
 }
 
 {
