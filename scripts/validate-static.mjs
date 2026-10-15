@@ -36,25 +36,26 @@ check(parkingLocation.includes('maximumAge:0') && parkingLocation.includes('enab
 check(parkingLocation.includes('LOCATION_ACCURACY_LOW') && parkingLocation.includes('PARKING_MAX_ACCURACY_M=250'),'Parking location helper rejects poor accuracy');
 
 check(html.includes('id="notificationPermissionBtn"') && html.includes('Parking alerts'),'Profile includes a parking notification toggle');
-check(html.includes('car or bike space') || html.includes('car or bike'),'Parking alert copy covers both car and bike spaces');
+check(html.includes('Car, Bike, or both'),'Parking alert copy exposes vehicle preferences');
 check(notificationControl.includes('Notification.requestPermission()'),'Notification enable flow requests device permission');
 check(notificationControl.includes('pushManager.subscribe') && notificationControl.includes('userVisibleOnly:true'),'Notification enable flow creates a Web Push subscription');
 check(notificationControl.includes("rpc('save_my_push_subscription'") && notificationControl.includes("rpc('remove_my_push_subscription'"),'Notification toggle persists and removes the signed-in user subscription');
+check(notificationControl.includes("rpc('get_my_push_preferences'") && notificationControl.includes("rpc('set_my_push_preferences'"),'Notification preferences are loaded and saved per subscription');
+check(notificationControl.includes("data-pref=\"car\"") && notificationControl.includes("data-pref=\"bike\"") && notificationControl.includes("data-pref=\"both\""),'Profile exposes Car, Bike and Both notification choices');
 check(notificationControl.includes('await sub.unsubscribe()'),'Notification disable flow unsubscribes the current device');
-check(notificationControl.includes('car or bike space'),'Notification status messaging covers car and bike alerts');
 check(sw.includes("addEventListener('push'") && sw.includes('showNotification'),'Service worker displays background push notifications');
 check(sw.includes("addEventListener('notificationclick'") && sw.includes('openWindow'),'Notification taps reopen ParkPulse');
 
-check(version.version==='21','Release marker reports version 21');
-check(updateControl.includes("APP_VERSION='21'") && updateControl.includes("cache:'no-store'") && updateControl.includes("location.reload()"),'Automatic updater is aligned to version 21 and bypasses cache');
+check(version.version==='22','Release marker reports version 22');
+check(updateControl.includes("APP_VERSION='22'") && updateControl.includes("cache:'no-store'") && updateControl.includes("location.reload()"),'Automatic updater is aligned to version 22 and bypasses cache');
 check(updateControl.includes('UPDATE_CHECK_MS=15000'),'Automatic updater checks for releases every 15 seconds');
-check(html.includes('update-control.js?v=21'),'Automatic update control is loaded');
-check(html.includes('location-control.js?v=21'),'Persistent location control is loaded');
-check(html.includes('notification-control.js?v=21'),'Parking notification control is loaded');
-check(html.includes('ParkPulse · Version 21'),'Profile displays the running app version');
-check(html.includes('app.js?v=21'),'HTML points at current JavaScript release');
-check(html.includes('app.css?v=21'),'HTML points at current CSS release');
-check(sw.includes("const CACHE='parkpulse-v21'"),'Service worker cache version matches release');
+check(html.includes('update-control.js?v=22'),'Automatic update control is loaded');
+check(html.includes('location-control.js?v=22'),'Persistent location control is loaded');
+check(html.includes('notification-control.js?v=22'),'Parking notification control is loaded');
+check(html.includes('ParkPulse · Version 22'),'Profile displays the running app version');
+check(html.includes('app.js?v=22'),'HTML points at current JavaScript release');
+check(html.includes('app.css?v=22'),'HTML points at current CSS release');
+check(sw.includes("const CACHE='parkpulse-v22'"),'Service worker cache version matches release');
 check(sw.includes("'./parking-location.js'") && sw.includes("'./location-control.js'") && sw.includes("'./notification-control.js'") && sw.includes("'./update-control.js'") && sw.includes("'./version.json'"),'Service worker includes location, notification and update assets');
 check(sw.includes('client.navigate(client.url)'),'New service worker refreshes open ParkPulse clients');
 check(sw.includes("fetch(request,{cache:'no-store'})"),'Core asset refresh is network-first');
