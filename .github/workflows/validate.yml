@@ -29,6 +29,9 @@ jobs:
       - name: Check location control syntax
         run: node --check location-control.js
 
+      - name: Check notification control syntax
+        run: node --check notification-control.js
+
       - name: Check update control syntax
         run: node --check update-control.js
 
