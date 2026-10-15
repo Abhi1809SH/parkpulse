@@ -25,7 +25,31 @@ export function pushSupported(env=globalThis){
   return !!(env.Notification&&env.navigator?.serviceWorker&&env.PushManager);
 }
 
-function setUI(status){
+function ensurePreferenceUI(){
+  if(document.getElementById('notificationPreferences'))return;
+  const row=document.getElementById('notificationPermissionBtn')?.closest('.profileRow');
+  if(!row)return;
+  const prefs=document.createElement('div');
+  prefs.id='notificationPreferences';
+  prefs.className='notificationPreferences hidden';
+  prefs.innerHTML='<span class="notificationPrefLabel">ALERTS FOR</span><div class="notificationPrefButtons"><button type="button" data-pref="car">🚗 Car</button><button type="button" data-pref="bike">🏍️ Bike</button><button type="button" data-pref="both">Car + Bike</button></div>';
+  row.insertAdjacentElement('afterend',prefs);
+  const style=document.createElement('style');
+  style.textContent='.notificationPreferences{padding:10px 15px 14px 65px;border-top:1px solid var(--line);background:#fcfbff}.notificationPrefLabel{display:block;font-size:8px;font-weight:900;letter-spacing:.1em;color:#aaa5b4;margin-bottom:7px}.notificationPrefButtons{display:flex;gap:6px;flex-wrap:wrap}.notificationPrefButtons button{padding:7px 10px;border-radius:99px;background:#f2f0f7;color:#777184;font-size:9px;font-weight:850;border:1px solid var(--line)}.notificationPrefButtons button.on{background:#eeeaff;color:#5f4dd1;border-color:#d9d1ff}@media(max-width:390px){.notificationPreferences{padding-left:61px}}';
+  document.head.appendChild(style);
+  prefs.querySelectorAll('button').forEach(button=>button.addEventListener('click',()=>setNotificationPreference(button.dataset.pref)));
+}
+
+function setPreferenceUI(carAlerts=true,bikeAlerts=true,enabled=false){
+  ensurePreferenceUI();
+  const prefs=document.getElementById('notificationPreferences');
+  if(!prefs)return;
+  prefs.classList.toggle('hidden',!enabled);
+  const selected=carAlerts&&bikeAlerts?'both':carAlerts?'car':'bike';
+  prefs.querySelectorAll('button').forEach(button=>button.classList.toggle('on',button.dataset.pref===selected));
+}
+
+function setUI(status,preferences={car_alerts:true,bike_alerts:true}){
   const btn=document.getElementById('notificationPermissionBtn');
   const copy=document.getElementById('notificationPermissionCopy');
   if(!btn||!copy)return;
@@ -34,9 +58,13 @@ function setUI(status){
   if(status==='enabled'){
     btn.textContent='Disable';
     btn.classList.add('enabled');
-    copy.textContent='Parking alerts are on. You will be notified whenever a car or bike space is occupied, becomes full, or becomes free.';
+    const car=preferences.car_alerts!==false,bike=preferences.bike_alerts!==false;
+    const label=car&&bike?'car and bike':car?'car':'bike';
+    copy.textContent=`Parking alerts are on for ${label} spaces. Choose what you want below.`;
+    setPreferenceUI(car,bike,true);
     return;
   }
+  setPreferenceUI(true,true,false);
   if(status==='blocked'){
     btn.textContent='Blocked';
     btn.classList.add('blocked');
@@ -50,7 +78,7 @@ function setUI(status){
     return;
   }
   btn.textContent='Enable';
-  copy.textContent='Get alerts after every car or bike space is occupied or released, including when either parking area becomes full.';
+  copy.textContent='Enable parking alerts, then choose Car, Bike, or both.';
 }
 
 async function registration(){
@@ -75,7 +103,35 @@ async function saveSubscription(subscription){
   if(error)throw error;
 }
 
+async function loadPreferences(endpoint){
+  const {data,error}=await supabase.rpc('get_my_push_preferences',{p_endpoint:endpoint});
+  if(error)return {car_alerts:true,bike_alerts:true};
+  const row=Array.isArray(data)?data[0]:data;
+  return row||{car_alerts:true,bike_alerts:true};
+}
+
+export async function setNotificationPreference(preference){
+  if(!['car','bike','both'].includes(preference))throw new Error('INVALID_NOTIFICATION_PREFERENCE');
+  const reg=await registration();
+  const sub=await reg.pushManager.getSubscription();
+  if(!sub)throw new Error('PUSH_NOT_ENABLED');
+  const car=preference==='car'||preference==='both';
+  const bike=preference==='bike'||preference==='both';
+  const prefs=document.getElementById('notificationPreferences');
+  prefs?.querySelectorAll('button').forEach(button=>button.disabled=true);
+  try{
+    const {data,error}=await supabase.rpc('set_my_push_preferences',{p_endpoint:sub.endpoint,p_car_alerts:car,p_bike_alerts:bike});
+    if(error||data!==true)throw error||new Error('PREFERENCE_SAVE_FAILED');
+    setUI('enabled',{car_alerts:car,bike_alerts:bike});
+    toast(preference==='both'?'Car + bike alerts enabled ✓':`${preference==='car'?'Car':'Bike'} alerts enabled ✓`);
+    return true;
+  }finally{
+    prefs?.querySelectorAll('button').forEach(button=>button.disabled=false);
+  }
+}
+
 export async function refreshNotificationStatus(){
+  ensurePreferenceUI();
   if(!pushSupported()){setUI('unsupported');return 'unsupported'}
   if(Notification.permission==='denied'){setUI('blocked');return 'blocked'}
   try{
@@ -86,7 +142,8 @@ export async function refreshNotificationStatus(){
     if(error||data!==true){
       try{await saveSubscription(sub)}catch{}
     }
-    setUI('enabled');
+    const preferences=await loadPreferences(sub.endpoint);
+    setUI('enabled',preferences);
     return 'enabled';
   }catch{
     setUI('disabled');
@@ -108,7 +165,8 @@ export async function enableNotifications(){
     sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)});
   }
   await saveSubscription(sub);
-  setUI('enabled');
+  const preferences=await loadPreferences(sub.endpoint);
+  setUI('enabled',preferences);
   return true;
 }
 
@@ -148,7 +206,10 @@ async function toggleNotifications(){
 export function installNotificationControl(){
   const btn=document.getElementById('notificationPermissionBtn');
   if(!btn)return false;
+  ensurePreferenceUI();
   btn.onclick=toggleNotifications;
+  const version=document.querySelector('.appVersion');
+  if(version)version.textContent='ParkPulse · Version 22';
   setTimeout(refreshNotificationStatus,800);
   window.addEventListener('pageshow',refreshNotificationStatus);
   window.addEventListener('focus',refreshNotificationStatus);
