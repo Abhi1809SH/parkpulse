@@ -34,7 +34,7 @@ function setUI(status){
   if(status==='enabled'){
     btn.textContent='Disable';
     btn.classList.add('enabled');
-    copy.textContent='Parking alerts are on. You will be notified whenever a car space is occupied, parking becomes full, or a car space becomes free.';
+    copy.textContent='Parking alerts are on. You will be notified whenever a car or bike space is occupied, becomes full, or becomes free.';
     return;
   }
   if(status==='blocked'){
@@ -50,7 +50,7 @@ function setUI(status){
     return;
   }
   btn.textContent='Enable';
-  copy.textContent='Get an alert after every car space is occupied or released, including when parking becomes full.';
+  copy.textContent='Get alerts after every car or bike space is occupied or released, including when either parking area becomes full.';
 }
 
 async function registration(){
