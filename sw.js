@@ -22,8 +22,7 @@ self.addEventListener('push',event=>{
   const options={
     body:data.body||'Parking availability changed.',
     icon:'./icon.svg',
-    data:{url:data.url||'./'},
-    renotify:true
+    data:{url:data.url||'./'}
   };
   event.waitUntil(self.registration.showNotification(title,options));
 });
