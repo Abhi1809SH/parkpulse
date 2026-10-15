@@ -6,6 +6,24 @@ function locationError(message){
   return error;
 }
 
+export function hardenedGeolocationOptions(options={}){
+  return {...options,enableHighAccuracy:true,maximumAge:0};
+}
+
+export function installFreshGeolocationGuard(env=globalThis){
+  const geolocation=env?.navigator?.geolocation;
+  if(!geolocation||geolocation.__parkpulseFreshGuard)return false;
+  const original=geolocation.getCurrentPosition?.bind(geolocation);
+  if(!original)return false;
+  try{
+    geolocation.getCurrentPosition=(success,error,options={})=>original(success,error,hardenedGeolocationOptions(options));
+    Object.defineProperty(geolocation,'__parkpulseFreshGuard',{value:true,configurable:false,enumerable:false});
+    return true;
+  }catch{
+    return false;
+  }
+}
+
 export function readFreshPosition(geolocation,{timeout=8000}={}){
   if(!geolocation)return Promise.reject(locationError('GEO_UNAVAILABLE'));
   return new Promise((resolve,reject)=>{
@@ -17,7 +35,7 @@ export function readFreshPosition(geolocation,{timeout=8000}={}){
         capturedAt:Date.now()
       }),
       reject,
-      {enableHighAccuracy:true,maximumAge:0,timeout}
+      hardenedGeolocationOptions({timeout})
     );
   });
 }
@@ -32,3 +50,5 @@ export async function getFreshParkingLocation(geolocation,{maxAccuracy=PARKING_M
   }
   return location;
 }
+
+if(typeof window!=='undefined')installFreshGeolocationGuard(window);
