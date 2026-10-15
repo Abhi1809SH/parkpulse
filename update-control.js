@@ -1,4 +1,4 @@
-export const APP_VERSION='21';
+export const APP_VERSION='22';
 export const UPDATE_CHECK_MS=15000;
 
 export async function fetchRemoteVersion({fetchImpl=fetch,now=Date.now}={}){
