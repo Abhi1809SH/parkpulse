@@ -21,9 +21,12 @@ check(app.includes("from('parking_sessions')") && app.includes(".is('ended_at',n
 check(app.includes('const HEARTBEAT_MS=15000'),'15-second server heartbeat is enabled');
 check(app.includes('refreshLive({silent:true})'),'Heartbeat revalidates live parking from the server');
 check(app.includes("document.visibilityState==='visible'"),'Heartbeat only runs while ParkPulse is visible');
-check(html.includes('app.js?v=12'),'HTML points at current JavaScript release');
+check(app.includes('navigator.geolocation.getCurrentPosition'),'Geolocation check is enabled');
+check(app.includes("p_latitude:location.latitude")&&app.includes("p_longitude:location.longitude")&&app.includes("p_accuracy_m:location.accuracy"),'Parking claims send geofence coordinates and accuracy');
+check(app.includes("permission.state==='granted'"),'Location is prewarmed only when permission is already granted');
+check(html.includes('app.js?v=13'),'HTML points at current JavaScript release');
 check(html.includes('app.css?v=11'),'HTML points at current CSS release');
-check(sw.includes("const CACHE='parkpulse-v12'"),'Service worker cache version matches release');
+check(sw.includes("const CACHE='parkpulse-v13'"),'Service worker cache version matches release');
 check(sw.includes("fetch(request,{cache:'no-store'})"),'Core asset refresh is network-first');
 check(!html.includes('invite code') || html.includes('No invite code'),'Invite-code onboarding is not required');
 check(!html.includes('sendOtpBtn') && !html.includes('verifyOtpBtn'),'Old OTP controls are absent');
