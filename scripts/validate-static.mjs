@@ -2,6 +2,7 @@ import fs from 'node:fs';
 
 const html=fs.readFileSync('index.html','utf8');
 const app=fs.readFileSync('app.js','utf8');
+const locationControl=fs.readFileSync('location-control.js','utf8');
 const sw=fs.readFileSync('sw.js','utf8');
 
 const failures=[];
@@ -24,12 +25,15 @@ check(app.includes("document.visibilityState==='visible'"),'Heartbeat only runs 
 check(app.includes('navigator.geolocation.getCurrentPosition'),'Geolocation check is enabled');
 check(app.includes("p_latitude:location.latitude")&&app.includes("p_longitude:location.longitude")&&app.includes("p_accuracy_m:location.accuracy"),'Parking claims send geofence coordinates and accuracy');
 check(app.includes("permission.state==='granted'"),'Location is prewarmed only when permission is already granted');
-check(html.includes('id="locationPermissionBtn"') && app.includes("$('locationPermissionBtn').onclick=enableLocationAccess"),'Profile includes an in-app location permission control');
-check(app.includes("localStorage.setItem(LOCATION_TOGGLE_KEY,'false')") && app.includes("throw new Error('LOCATION_DISABLED')"),'Profile location control can disable ParkPulse location use');
-check(html.includes('ParkPulse · Version 16'),'Profile displays the running app version');
-check(html.includes('app.js?v=16'),'HTML points at current JavaScript release');
-check(html.includes('app.css?v=16'),'HTML points at current CSS release');
-check(sw.includes("const CACHE='parkpulse-v16'"),'Service worker cache version matches release');
+check(html.includes('id="locationPermissionBtn"'),'Profile includes an in-app location permission control');
+check(locationControl.includes("maximumAge:0") && locationControl.includes("enableHighAccuracy:true"),'Re-enable requires a fresh high-accuracy location request');
+check(locationControl.includes("storage.setItem(LOCATION_TOGGLE_KEY,'false')") && locationControl.includes("storage.setItem(LOCATION_TOGGLE_KEY,'true')"),'Location preference is enabled only after location proof succeeds');
+check(html.includes('location-control.js?v=17'),'Verified location control is loaded');
+check(html.includes('ParkPulse · Version 17'),'Profile displays the running app version');
+check(html.includes('app.js?v=17'),'HTML points at current JavaScript release');
+check(html.includes('app.css?v=17'),'HTML points at current CSS release');
+check(sw.includes("const CACHE='parkpulse-v17'"),'Service worker cache version matches release');
+check(sw.includes("'./location-control.js'"),'Service worker includes verified location control');
 check(sw.includes("fetch(request,{cache:'no-store'})"),'Core asset refresh is network-first');
 check(html.includes('Location access') && html.includes('Daily reset') && html.includes('Privacy first'),'Profile page includes parking rules and privacy guidance');
 check(!html.includes('invite code') || html.includes('No invite code'),'Invite-code onboarding is not required');
