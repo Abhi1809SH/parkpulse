@@ -26,11 +26,17 @@ jobs:
           cp app.js /tmp/parkpulse-app.mjs
           node --check /tmp/parkpulse-app.mjs
 
+      - name: Check location control syntax
+        run: node --check location-control.js
+
       - name: Check service worker syntax
         run: node --check sw.js
 
       - name: Validate PWA manifest JSON
         run: node -e "JSON.parse(require('fs').readFileSync('manifest.webmanifest','utf8')); console.log('Manifest JSON valid')"
+
+      - name: Test location permission toggle
+        run: node scripts/test-location-control.mjs
 
       - name: Run ParkPulse static checks
         run: node scripts/validate-static.mjs
