@@ -1,5 +1,5 @@
-const CACHE='parkpulse-v16';
-const SHELL=['./','./index.html','./app.css','./app.js','./manifest.webmanifest','./icon.svg'];
+const CACHE='parkpulse-v17';
+const SHELL=['./','./index.html','./app.css','./app.js','./location-control.js','./manifest.webmanifest','./icon.svg'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting()));
@@ -29,7 +29,7 @@ self.addEventListener('fetch',event=>{
     return;
   }
 
-  if(/\/(?:app\.js|app\.css|index\.html)$/.test(url.pathname)){
+  if(/\/(?:app\.js|location-control\.js|app\.css|index\.html)$/.test(url.pathname)){
     event.respondWith(networkFirst(event.request));
     return;
   }
