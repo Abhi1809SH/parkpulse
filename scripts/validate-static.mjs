@@ -24,10 +24,11 @@ check(app.includes("document.visibilityState==='visible'"),'Heartbeat only runs 
 check(app.includes('navigator.geolocation.getCurrentPosition'),'Geolocation check is enabled');
 check(app.includes("p_latitude:location.latitude")&&app.includes("p_longitude:location.longitude")&&app.includes("p_accuracy_m:location.accuracy"),'Parking claims send geofence coordinates and accuracy');
 check(app.includes("permission.state==='granted'"),'Location is prewarmed only when permission is already granted');
-check(html.includes('app.js?v=13'),'HTML points at current JavaScript release');
-check(html.includes('app.css?v=11'),'HTML points at current CSS release');
-check(sw.includes("const CACHE='parkpulse-v13'"),'Service worker cache version matches release');
+check(html.includes('app.js?v=14'),'HTML points at current JavaScript release');
+check(html.includes('app.css?v=14'),'HTML points at current CSS release');
+check(sw.includes("const CACHE='parkpulse-v14'"),'Service worker cache version matches release');
 check(sw.includes("fetch(request,{cache:'no-store'})"),'Core asset refresh is network-first');
+check(html.includes('Near-office parking') && html.includes('Daily reset') && html.includes('Privacy first'),'Profile page includes parking rules and privacy guidance');
 check(!html.includes('invite code') || html.includes('No invite code'),'Invite-code onboarding is not required');
 check(!html.includes('sendOtpBtn') && !html.includes('verifyOtpBtn'),'Old OTP controls are absent');
 
