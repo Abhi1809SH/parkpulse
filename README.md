@@ -9,9 +9,19 @@ ParkPulse is a mobile-first installable workplace parking PWA for **5 car spaces
 - Tap an available car or bike space to park.
 - Occupancy updates for other signed-in users through Supabase Realtime.
 - Tap **Check out** when leaving.
-- Active parking is automatically cleared at 6:00 PM IST.
+- Active parking is automatically cleared at 7:00 PM IST.
 - Completed parking history older than 30 days is cleaned up automatically.
 - Password recovery uses a one-time recovery code shown when the account is created and rotated after a successful recovery.
+- Users can opt in to **Parking alerts** from Profile. Car parking alerts are sent after each manual car-space claim and checkout, including a dedicated parking-full alert.
+
+## Parking notifications
+
+- Notifications are optional per device and can be enabled or disabled from **Profile → Parking alerts**.
+- When a car space is occupied, subscribed users other than the person who parked receive the remaining car-space count.
+- When the last car space is occupied, subscribed users receive a **Parking full** notification.
+- When a user checks out of a car space, subscribed users other than that user receive a **Space available** notification with the new free count.
+- The scheduled daily reset does not send a burst of parking notifications.
+- Background notifications use standards-based Web Push. On supported iPhones, ParkPulse must be installed to the Home Screen and notification permission must be granted.
 
 ## Architecture
 
@@ -20,9 +30,10 @@ ParkPulse is a mobile-first installable workplace parking PWA for **5 car spaces
 - PostgreSQL + RLS for profiles and parking data.
 - Atomic database RPCs prevent two people taking the same space and prevent one user holding two active spaces.
 - `parking_presence` exposes occupancy only; other employees' user/session IDs are not exposed to the client.
+- Push subscriptions are stored server-side and Web Push delivery is handled by a Supabase Edge Function. The private VAPID key is never exposed to the browser.
 
 ## Validation
 
-Every push to `main` runs `.github/workflows/validate.yml`, which checks JavaScript syntax, service-worker syntax, required DOM elements, Home-page landing behavior, privacy-safe occupancy access, release/cache versions, and removal of obsolete OTP/invite-code UI.
+Every push to `main` runs `.github/workflows/validate.yml`, which checks JavaScript syntax, service-worker syntax, required DOM elements, Home-page landing behavior, privacy-safe occupancy access, location controls, notification controls, release/cache versions, and removal of obsolete OTP/invite-code UI.
 
 The GitHub Pages deployment workflow publishes the current `main` branch after changes are committed.
