@@ -1,3 +1,5 @@
+import { installFreshGeolocationGuard } from './parking-location.js?v=21';
+
 export const LOCATION_TOGGLE_KEY='parkpulse.locationEnabled';
 
 export function requestFreshLocation(geolocation){
@@ -97,6 +99,7 @@ async function restoreLocationState({btn,copy,geolocation,storage}){
 }
 
 export function installLocationControl({doc=document,geolocation=navigator.geolocation,storage=localStorage}={}){
+  installFreshGeolocationGuard(globalThis);
   const btn=doc.getElementById('locationPermissionBtn');
   const copy=doc.getElementById('locationPermissionCopy');
   if(!btn||!copy)return false;
