@@ -25,10 +25,11 @@ check(app.includes('navigator.geolocation.getCurrentPosition'),'Geolocation chec
 check(app.includes("p_latitude:location.latitude")&&app.includes("p_longitude:location.longitude")&&app.includes("p_accuracy_m:location.accuracy"),'Parking claims send geofence coordinates and accuracy');
 check(app.includes("permission.state==='granted'"),'Location is prewarmed only when permission is already granted');
 check(html.includes('id="locationPermissionBtn"') && app.includes("$('locationPermissionBtn').onclick=enableLocationAccess"),'Profile includes an in-app location permission control');
-check(html.includes('ParkPulse · Version 15'),'Profile displays the running app version');
-check(html.includes('app.js?v=15'),'HTML points at current JavaScript release');
-check(html.includes('app.css?v=15'),'HTML points at current CSS release');
-check(sw.includes("const CACHE='parkpulse-v15'"),'Service worker cache version matches release');
+check(app.includes("localStorage.setItem(LOCATION_TOGGLE_KEY,'false')") && app.includes("throw new Error('LOCATION_DISABLED')"),'Profile location control can disable ParkPulse location use');
+check(html.includes('ParkPulse · Version 16'),'Profile displays the running app version');
+check(html.includes('app.js?v=16'),'HTML points at current JavaScript release');
+check(html.includes('app.css?v=16'),'HTML points at current CSS release');
+check(sw.includes("const CACHE='parkpulse-v16'"),'Service worker cache version matches release');
 check(sw.includes("fetch(request,{cache:'no-store'})"),'Core asset refresh is network-first');
 check(html.includes('Location access') && html.includes('Daily reset') && html.includes('Privacy first'),'Profile page includes parking rules and privacy guidance');
 check(!html.includes('invite code') || html.includes('No invite code'),'Invite-code onboarding is not required');
