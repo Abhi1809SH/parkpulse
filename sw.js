@@ -1,5 +1,5 @@
-const CACHE='parkpulse-v18';
-const SHELL=['./','./index.html','./app.css','./app.js','./location-control.js','./update-control.js','./version.json','./manifest.webmanifest','./icon.svg'];
+const CACHE='parkpulse-v19';
+const SHELL=['./','./index.html','./app.css','./app.js','./location-control.js','./notification-control.js','./update-control.js','./version.json','./manifest.webmanifest','./icon.svg'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting()));
@@ -12,6 +12,35 @@ self.addEventListener('activate',event=>{
     await self.clients.claim();
     const clients=await self.clients.matchAll({type:'window',includeUncontrolled:true});
     await Promise.all(clients.map(client=>client.navigate(client.url).catch(()=>null)));
+  })());
+});
+
+self.addEventListener('push',event=>{
+  let data={};
+  try{data=event.data?.json?.()||{}}catch{data={title:'ParkPulse',body:event.data?.text?.()||'Parking availability changed.'}}
+  const title=data.title||'ParkPulse';
+  const options={
+    body:data.body||'Parking availability changed.',
+    icon:'./icon.svg',
+    data:{url:data.url||'./'},
+    renotify:true
+  };
+  event.waitUntil(self.registration.showNotification(title,options));
+});
+
+self.addEventListener('notificationclick',event=>{
+  event.notification.close();
+  const target=new URL(event.notification.data?.url||'./',self.location.origin).href;
+  event.waitUntil((async()=>{
+    const clients=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+    for(const client of clients){
+      if(client.url.startsWith(self.location.origin)){
+        await client.focus();
+        if('navigate' in client)await client.navigate(target).catch(()=>null);
+        return;
+      }
+    }
+    await self.clients.openWindow(target);
   })());
 });
 
@@ -35,7 +64,7 @@ self.addEventListener('fetch',event=>{
     return;
   }
 
-  if(/\/(?:app\.js|location-control\.js|update-control\.js|version\.json|app\.css|index\.html)$/.test(url.pathname)){
+  if(/\/(?:app\.js|location-control\.js|notification-control\.js|update-control\.js|version\.json|app\.css|index\.html)$/.test(url.pathname)){
     event.respondWith(networkFirst(event.request));
     return;
   }
